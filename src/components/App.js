@@ -2,17 +2,29 @@ import React from "react";
 //import { moviesData } from "../moviesData";
 import MovieItem from "./MovieItem";
 import { API_URL, API_KEY_3 } from "./api";
+import MovieTabs from "./MovieTabs";
 
 class App extends React.Component {
   constructor() {
     super();
     this.state = {
       movies: [],
-      moviesWillWatch: []
+      moviesWillWatch: [],
+      sort_by: "popularity.desc"
     };
   }
   componentDidMount() {
-    fetch(`${API_URL}/discover/movie?api_key=${API_KEY_3}`)
+    this.getMovies();
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.sort_by !== this.state.sort_by) {
+      this.getMovies();
+    }
+  }
+  getMovies = () => {
+    fetch(
+      `${API_URL}/discover/movie?api_key=${API_KEY_3}&sort_by=${this.state.sort_by}`
+    )
       .then(response => {
         return response.json();
       })
@@ -21,13 +33,19 @@ class App extends React.Component {
           movies: data.results
         });
       });
-  }
+  };
   removeMovie = movie => {
     const updateMovies = this.state.movies.filter(function(item) {
       return item.id !== movie.id;
     });
+    const updateRemoveWillWatch = this.state.moviesWillWatch.filter(function(
+      item
+    ) {
+      return item.id !== movie.id;
+    });
     this.setState({
-      movies: updateMovies
+      movies: updateMovies,
+      moviesWillWatch: updateRemoveWillWatch
     });
   };
   addMovieToWillWatch = movie => {
@@ -47,11 +65,25 @@ class App extends React.Component {
       moviesWillWatch: updateMoviesWillWatch
     });
   };
+  updateSortBy = value => {
+    this.setState({
+      sort_by: value
+    });
+  };
   render() {
     return (
       <div className="container">
         <div className="row">
           <div className="col-9">
+            <div className="row mb-3 mt-3">
+              <div className="col-12">
+                {" "}
+                <MovieTabs
+                  sort_by={this.state.sort_by}
+                  updateSortBy={this.updateSortBy}
+                />{" "}
+              </div>
+            </div>
             <div className="row">
               {this.state.movies.map(movie => {
                 return (

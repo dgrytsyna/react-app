@@ -7,7 +7,12 @@ class MovieItem extends React.Component {
     };
   }
   render() {
-    const { movie, removeMovie, addMovieToWillWatch, removeMovieFromWillWatch } = this.props;
+    const {
+      movie,
+      removeMovie,
+      addMovieToWillWatch,
+      removeMovieFromWillWatch
+    } = this.props;
     return (
       <div className="card">
         <img
@@ -24,10 +29,10 @@ class MovieItem extends React.Component {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={()=>{
+                onClick={() => {
                   this.setState({
                     willWatch: false
-                  })
+                  });
                   removeMovieFromWillWatch(movie);
                 }}
               >
