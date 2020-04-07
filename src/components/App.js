@@ -3,6 +3,7 @@ import React from "react";
 import MovieItem from "./MovieItem";
 import { API_URL, API_KEY_3 } from "./api";
 import MovieTabs from "./MovieTabs";
+import Pagination from "./Pagination";
 
 class App extends React.Component {
   constructor() {
@@ -10,65 +11,88 @@ class App extends React.Component {
     this.state = {
       movies: [],
       moviesWillWatch: [],
-      sort_by: "popularity.desc"
+      sort_by: "popularity.desc",
+      page: 1,
+      total_pages: [],
     };
   }
   componentDidMount() {
     this.getMovies();
   }
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.sort_by !== this.state.sort_by) {
+    if (
+      prevState.sort_by !== this.state.sort_by ||
+      prevState.page !== this.state.page
+    ) {
       this.getMovies();
     }
   }
   getMovies = () => {
     fetch(
-      `${API_URL}/discover/movie?api_key=${API_KEY_3}&sort_by=${this.state.sort_by}`
+      `${API_URL}/discover/movie?api_key=${API_KEY_3}&sort_by=${this.state.sort_by}&page=${this.state.page}&total_pages=${this.state.total_pages}`
     )
-      .then(response => {
+      .then((response) => {
         return response.json();
       })
-      .then(data => {
+      .then((data) => {
         this.setState({
-          movies: data.results
+          movies: data.results,
+          page: data.page,
+          total_pages: data.total_pages,
         });
       });
   };
-  removeMovie = movie => {
-    const updateMovies = this.state.movies.filter(function(item) {
+  removeMovie = (movie) => {
+    const updateMovies = this.state.movies.filter(function (item) {
       return item.id !== movie.id;
     });
-    const updateRemoveWillWatch = this.state.moviesWillWatch.filter(function(
+    const updateRemoveWillWatch = this.state.moviesWillWatch.filter(function (
       item
     ) {
       return item.id !== movie.id;
     });
     this.setState({
       movies: updateMovies,
-      moviesWillWatch: updateRemoveWillWatch
+      moviesWillWatch: updateRemoveWillWatch,
     });
   };
-  addMovieToWillWatch = movie => {
+  addMovieToWillWatch = (movie) => {
     const updateMoviesWillWatch = [...this.state.moviesWillWatch];
     updateMoviesWillWatch.push(movie);
     this.setState({
-      moviesWillWatch: updateMoviesWillWatch
+      moviesWillWatch: updateMoviesWillWatch,
     });
   };
-  removeMovieFromWillWatch = movie => {
-    const updateMoviesWillWatch = this.state.moviesWillWatch.filter(function(
+  removeMovieFromWillWatch = (movie) => {
+    const updateMoviesWillWatch = this.state.moviesWillWatch.filter(function (
       item
     ) {
       return item.id !== movie.id;
     });
     this.setState({
-      moviesWillWatch: updateMoviesWillWatch
+      moviesWillWatch: updateMoviesWillWatch,
     });
   };
-  updateSortBy = value => {
+  updateSortBy = (value) => {
     this.setState({
-      sort_by: value
+      sort_by: value,
     });
+  };
+  previousPage = () => {
+    if (this.state.page !== 1) {
+      const getPrevious = this.state.page - 1;
+      this.setState({
+        page: getPrevious,
+      });
+    }
+  };
+  nextPage = () => {
+    if (this.state.page !== this.state.total_pages) {
+      const getNext = this.state.page + 1;
+      this.setState({
+        page: getNext,
+      });
+    }
   };
   render() {
     return (
@@ -83,9 +107,18 @@ class App extends React.Component {
                   updateSortBy={this.updateSortBy}
                 />{" "}
               </div>
+              <div className="col-12 mt-3">
+                {" "}
+                <Pagination
+                  nextPage={this.nextPage}
+                  previousPage={this.previousPage}
+                  page={this.state.page}
+                  total_pages={this.state.total_pages}
+                />
+              </div>
             </div>
             <div className="row">
-              {this.state.movies.map(movie => {
+              {this.state.movies.map((movie) => {
                 return (
                   <div className="col-6 mb-3" key={movie.id}>
                     <MovieItem
@@ -102,7 +135,7 @@ class App extends React.Component {
           <div className="col-3">
             <h4> Will Watch: {this.state.moviesWillWatch.length}</h4>
             <ul className="list-group">
-              {this.state.moviesWillWatch.map(movie => (
+              {this.state.moviesWillWatch.map((movie) => (
                 <li key={movie.id} className="list-group-item">
                   <div className="d-flex justify-content-between">
                     <p>{movie.title}</p>
